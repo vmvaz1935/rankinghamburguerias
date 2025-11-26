@@ -208,10 +208,38 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
     body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
     .chart-container { position: relative; height: 60vh; width: 100%; min-height: 400px; }
     /* Custom scrollbar for list */
+    .custom-scroll { -webkit-overflow-scrolling: touch; }
     .custom-scroll::-webkit-scrollbar { width: 6px; }
     .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    /* Mobile specific adjustments */
+    @media (max-width: 767px) {
+      .chart-container {
+        min-height: 320px;
+        height: auto;
+      }
+    }
+    
+    .mobile-toggle {
+      flex: 1;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.5rem 0.75rem;
+      color: #475569;
+      background: #fff;
+      transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .mobile-toggle.active {
+      background: #0f172a;
+      color: #fff;
+      border-color: #0f172a;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.2);
+    }
     
     .category-dot { width: 10px; height: 10px; display: inline-block; border-radius: 50%; margin-right: 6px; }
     .cat-hamburgueria { background-color: #f97316; } /* Orange-500 */
@@ -323,7 +351,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
         color: white;
       }
     </style></head>
-<body class="flex flex-col h-screen overflow-hidden">
+<body class="flex flex-col min-h-screen">
   
   <!-- Header -->
   <header class="bg-white border-b border-gray-200 z-10 shadow-sm flex-none">
@@ -345,13 +373,19 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
   </header>
 
   <!-- Main Content -->
-  <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+  <main class="flex-1 flex flex-col md:flex-row relative">
+    
+    <!-- Mobile Toggle -->
+    <div class="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex gap-2 shadow-sm sticky top-0 z-20">
+      <button type="button" class="mobile-toggle active" data-mobile-target="list">Lista</button>
+      <button type="button" class="mobile-toggle" data-mobile-target="chart">Gráfico</button>
+    </div>
     
     <!-- Left Panel: Controls & List -->
-    <aside class="w-full md:w-96 bg-white border-r border-gray-200 flex flex-col z-20 shadow-lg md:shadow-none flex-none h-1/2 md:h-auto order-2 md:order-1">
+    <aside id="listPanel" class="w-full md:w-96 bg-white border-b md:border-b-0 md:border-r border-gray-200 flex flex-col z-20 shadow-lg md:shadow-none flex-none">
       
       <!-- Search & Filter -->
-      <div class="p-4 border-b border-gray-100 space-y-3 bg-gray-50">
+      <div class="p-4 border-b border-gray-100 space-y-3 bg-gray-50 md:sticky md:top-0 z-10">
         <div class="relative">
           <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</span>
           <input class="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-shadow shadow-sm" id="searchInput" placeholder="Buscar hamburgueria..." type="text">
@@ -1277,7 +1311,7 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
     </aside>
 
     <!-- Right Panel: Chart Area -->
-    <section class="flex-1 bg-slate-50 relative flex flex-col h-1/2 md:h-auto order-1 md:order-2">
+    <section id="chartPanel" class="flex-1 bg-slate-50 relative flex flex-col">
       <!-- Chart Overlay Info (Absolute) -->
       <div class="absolute top-4 right-4 z-10 hidden md:block pointer-events-none opacity-50">
         <div class="text-right">
@@ -1691,6 +1725,50 @@ wb);O(IMG_SEARCH_ATTRIBUTION_MAP,Pd);O(IMG_GEN_REPLACE_MAP,fa.A);X();jf();h.A=0}
         applyFilters();
       });
     });
+
+    // --- MOBILE VIEW TOGGLE ---
+    const listPanel = document.getElementById('listPanel');
+    const chartPanel = document.getElementById('chartPanel');
+    const mobileViewButtons = document.querySelectorAll('[data-mobile-target]');
+    let activeMobileView = 'list';
+
+    function applyMobileView(target) {
+      activeMobileView = target;
+      mobileViewButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mobileTarget === target);
+      });
+      if (window.innerWidth < 768) {
+        const showChart = target === 'chart';
+        listPanel.classList.toggle('hidden', showChart);
+        chartPanel.classList.toggle('hidden', !showChart);
+        if (showChart) {
+          requestAnimationFrame(() => myChart.resize());
+        }
+      }
+    }
+
+    function handlePanelVisibility() {
+      if (window.innerWidth < 768) {
+        applyMobileView(activeMobileView);
+      } else {
+        listPanel.classList.remove('hidden');
+        chartPanel.classList.remove('hidden');
+      }
+    }
+
+    if (mobileViewButtons.length && listPanel && chartPanel) {
+      mobileViewButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.dataset.mobileTarget;
+          if (target === activeMobileView) return;
+          applyMobileView(target);
+          const targetPanel = target === 'chart' ? chartPanel : listPanel;
+          targetPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+      window.addEventListener('resize', handlePanelVisibility);
+      handlePanelVisibility();
+    }
 
     // --- MODAL & PUBLISH LOGIC ---
     const modal = document.getElementById('introModal');
