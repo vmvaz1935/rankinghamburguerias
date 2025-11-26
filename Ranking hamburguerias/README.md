@@ -10,6 +10,18 @@ Um mapa interativo de valor que visualiza as 100 melhores hamburguerias de São 
 - **Interatividade**: Clique nos pontos do gráfico ou na lista para ver detalhes
 - **Zona de Valor Justo**: Visualize a faixa de preço recomendada baseada no ranking
 
+## 🌐 Publicar no GitHub Pages
+
+Para publicar este site no GitHub Pages:
+
+1. Vá para **Settings** do repositório no GitHub
+2. No menu lateral, clique em **Pages**
+3. Em **Source**, selecione **Deploy from a branch**
+4. Escolha o branch **main** e a pasta **/ (root)**
+5. Clique em **Save**
+6. Aguarde alguns minutos e seu site estará disponível em:
+   `https://vmvaz1935.github.io/rankinghamburguerias/`
+
 ## 🚀 Como Usar
 
 1. Acesse a página através do GitHub Pages
